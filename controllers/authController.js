@@ -32,7 +32,7 @@ const setRefreshTokenCookie = (res, token, expiresAt) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     expires: expiresAt
   });
 };
@@ -118,7 +118,7 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
       res.cookie("accessToken", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 15 * 60 * 1000,
       });
     };
