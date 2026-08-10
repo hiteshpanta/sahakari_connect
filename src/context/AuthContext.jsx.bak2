@@ -1,0 +1,109 @@
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setCurrentUser(data);
+          } else {
+            localStorage.removeItem('token');
+          }
+        } catch (err) {
+          console.error('Failed to fetch user', err);
+          localStorage.removeItem('token');
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, []);
+
+  const login = useCallback(async (email, password) => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        setCurrentUser(data);
+        setError('');
+        return true;
+      } else {
+        setError(data.message || 'Invalid email or password');
+        return false;
+      }
+    } catch (err) {
+      setError('Network error');
+      return false;
+    }
+  }, []);
+
+  const register = useCallback(async (name, email, password, branch, role = 'staff', cooperativeId = null) => {
+    try {
+      const payload = { name, email, password, branch, role };
+      if (cooperativeId) payload.cooperativeId = cooperativeId;
+      
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        setCurrentUser(data);
+        setError('');
+        return true;
+      } else {
+        setError(data.message || 'Registration failed');
+        return false;
+      }
+    } catch (err) {
+      setError('Network error');
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setCurrentUser(null);
+    setError('');
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a proper spinner component
+  }
+
+  return (
+    <AuthContext.Provider value={{ currentUser, login, register, logout, error, setError }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  return ctx;
+};
