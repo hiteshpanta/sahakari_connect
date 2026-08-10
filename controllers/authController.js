@@ -135,6 +135,7 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
       branch: user.branch,
       cooperativeId: user.cooperativeId,
       avatar: user.avatar,
+      token: accessToken,
     };
 
     // Include customerId for member users
