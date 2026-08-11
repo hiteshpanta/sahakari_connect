@@ -9,17 +9,16 @@ export default defineConfig({
     tailwindcss(),
   ],
 
-  // Development server
   server: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: 'all',
+    allowedHosts: true,
   },
 
-  // Vite preview server
   preview: {
     host: '0.0.0.0',
-    port: 4173,
-    allowedHosts: 'all',
+    port: Number(process.env.PORT) || 4173,
+    strictPort: true,
+    allowedHosts: true,
   },
 });
