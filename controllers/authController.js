@@ -32,7 +32,7 @@ const setRefreshTokenCookie = (res, token, expiresAt) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: 'lax',
     expires: expiresAt
   });
 };
@@ -118,7 +118,7 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
       res.cookie("accessToken", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        sameSite: "lax",
         maxAge: 15 * 60 * 1000,
       });
     };
@@ -135,7 +135,6 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
       branch: user.branch,
       cooperativeId: user.cooperativeId,
       avatar: user.avatar,
-      token: accessToken,
     };
 
     // Include customerId for member users
